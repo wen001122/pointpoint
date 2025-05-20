@@ -1,0 +1,24 @@
+# config.yaml
+
+# ========= 数据路径 =========
+data_root: ./data
+train_split: train
+val_split: val
+
+# ========= 模型参数 =========
+in_channels: 6           # 输入维度 = 3坐标 + 3法向量
+num_classes: 2           # 二分类：耳朵 / 非耳朵
+enc_channels: [32, 64, 128, 256]
+enc_depths: [2, 2, 2, 2]
+enc_heads: [2, 4, 8, 8]
+patch_size: 48
+mlp_ratio: 4.0
+drop_path: 0.1
+
+# ========= 训练参数 =========
+epochs: 80
+batch_size: 1
+learning_rate: 0.001
+seed: 42
+save_path: best_model.pt
+device: cuda  # 或 "cpu"
