@@ -17,18 +17,17 @@ class EarDataset(Dataset):
         return len(self.file_list)
 
     def __getitem__(self, idx):
-        data = np.load(self.file_list[idx])  # (24000, 7)
+        data = np.load(self.file_list[idx])  # shape: (24000, 7)
+        coord = data[:, :3]
+        normal = data[:, 3:6]
+        label = data[:, 6].astype(np.int64)  # Ensure long type
 
-        coord = data[:, :3]       # x, y, z
-        normal = data[:, 3:6]     # nx, ny, nz
-        label = data[:, 6]        # class label
-
-        feat = np.concatenate([coord, normal], axis=1)  # (24000, 6)
+        feat = np.concatenate([coord, normal], axis=1)
 
         return {
-            "coord": torch.tensor(coord, dtype=torch.float32),      # (24000, 3)
-            "feat": torch.tensor(feat, dtype=torch.float32),        # (24000, 6)
-            "label": torch.tensor(label, dtype=torch.long),         # (24000,)
-            "batch": torch.zeros(coord.shape[0], dtype=torch.long), # 全0，单文件batch
+            "coord": torch.tensor(coord, dtype=torch.float32),
+            "feat": torch.tensor(feat, dtype=torch.float32),
+            "label": torch.tensor(label, dtype=torch.long),
+            "batch": torch.zeros(coord.shape[0], dtype=torch.long),
             "grid_size": 0.02
         }
