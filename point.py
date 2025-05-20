@@ -1,11 +1,10 @@
 import torch
-import torch_scatter
 
 class Point:
     def __init__(self, data_dict):
         self.coord = data_dict["coord"]
         self.feat = data_dict["feat"]
-        self.label = data_dict.get("label", None)  # 可选字段，兼容测试
+        self.label = data_dict.get("label", None)
         self.batch = data_dict["batch"]
         self.grid_size = data_dict["grid_size"]
 
@@ -13,18 +12,16 @@ class Point:
         self.offset = self.batch2offset(self.batch)
 
     def batch2offset(self, batch):
-        bincount = torch.bincount(batch)
+        batch_cpu = batch.view(-1).to("cpu")  # 转成CPU 1D
+        bincount = torch.bincount(batch_cpu)
         return torch.cumsum(bincount, dim=0).long()
 
     def sparsify(self):
         grid_coord = self.grid_coord[:, :3].int()
-        indices = torch.cat([
-            self.batch.unsqueeze(-1).int(),
-            grid_coord
-        ], dim=1)
+        batch_column = self.batch.view(-1, 1).int()
+        indices = torch.cat([batch_column, grid_coord], dim=1)
 
         spatial_shape = torch.max(grid_coord, dim=0).values + 1
-        sparse_shape = [self.batch.max().item() + 1] + spatial_shape.tolist()
 
         import spconv.pytorch as spconv
         self.sparse_conv_feat = spconv.SparseConvTensor(
